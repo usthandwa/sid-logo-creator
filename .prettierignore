@@ -1,0 +1,6 @@
+dist
+dev-dist
+coverage
+samples
+public/fonts
+package-lock.json
