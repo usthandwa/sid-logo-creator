@@ -42,7 +42,12 @@ export function CreatorPage({ typeface, languages }: Props): React.JSX.Element {
   return (
     <div className="creator">
       <section className="card panel" aria-label="Logo options">
-        <div className="tabs" role="tablist" aria-label="Kind of entity">
+        <div
+          id="walkthrough-entity-type"
+          className="tabs"
+          role="tablist"
+          aria-label="Kind of entity"
+        >
           {TIER_GROUPS.map((group) => (
             <button
               key={group.id}
@@ -71,6 +76,7 @@ export function CreatorPage({ typeface, languages }: Props): React.JSX.Element {
         ) : null}
 
         <Fieldset
+          id="walkthrough-language"
           legend="Language"
           hint={
             state.language.approval.verified
@@ -86,7 +92,7 @@ export function CreatorPage({ typeface, languages }: Props): React.JSX.Element {
           />
         </Fieldset>
 
-        <Fieldset legend="Layout" hint={state.layout.help}>
+        <Fieldset id="walkthrough-layout" legend="Layout" hint={state.layout.help}>
           <ChoiceGroup
             label="Layout"
             value={state.layoutId}
@@ -102,14 +108,16 @@ export function CreatorPage({ typeface, languages }: Props): React.JSX.Element {
 
         {state.layout.carriesEntityName ? (
           <>
-            <TextField
-              id="entity-name"
-              label="Entity name"
-              value={state.entityName}
-              placeholder={state.tier.namePlaceholder}
-              hint="Type the official name. Leave it blank for the base logo with no entity name."
-              onChange={state.setEntityName}
-            />
+            <div id="walkthrough-entity-name">
+              <TextField
+                id="entity-name"
+                label="Entity name"
+                value={state.entityName}
+                placeholder={state.tier.namePlaceholder}
+                hint="Type the official name. Leave it blank for the base logo with no entity name."
+                onChange={state.setEntityName}
+              />
+            </div>
             {state.tier.allowsDescriptor ? (
               <TextField
                 id="descriptor"
@@ -123,11 +131,12 @@ export function CreatorPage({ typeface, languages }: Props): React.JSX.Element {
           </>
         ) : null}
 
-        <Fieldset legend="Logo colour">
+        <Fieldset id="walkthrough-color" legend="Logo colour">
           <ColourPicker value={state.colourId} onChange={state.setColourId} />
         </Fieldset>
 
         <Fieldset
+          id="walkthrough-background"
           legend="Preview background"
           hint="Changes the surface behind the preview only. It is never part of the downloaded file."
         >
@@ -140,6 +149,7 @@ export function CreatorPage({ typeface, languages }: Props): React.JSX.Element {
         </Fieldset>
 
         <Fieldset
+          id="walkthrough-clear-space"
           legend="Clear space"
           hint={`Adds the required clear space — twice the height of the lowercase letters — inside the file, so the artwork cannot be crowded when it is placed.`}
         >
@@ -194,15 +204,17 @@ export function CreatorPage({ typeface, languages }: Props): React.JSX.Element {
           </p>
         )}
 
-        <DownloadPanel
-          lockup={state.lockup}
-          colourHex={state.colourHex}
-          colourId={state.colourId}
-          entityName={state.entityName}
-          languageCode={state.languageCode}
-          layoutId={state.layoutId}
-          title={title}
-        />
+        <div id="walkthrough-download">
+          <DownloadPanel
+            lockup={state.lockup}
+            colourHex={state.colourHex}
+            colourId={state.colourId}
+            entityName={state.entityName}
+            languageCode={state.languageCode}
+            layoutId={state.layoutId}
+            title={title}
+          />
+        </div>
       </section>
     </div>
   );

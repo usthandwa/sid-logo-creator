@@ -1,14 +1,15 @@
 import type { ReactNode } from 'react';
 
 interface FieldsetProps {
+  readonly id?: string | undefined;
   readonly legend: string;
   readonly hint?: string | undefined;
   readonly children: ReactNode;
 }
 
-export function Fieldset({ legend, hint, children }: FieldsetProps): React.JSX.Element {
+export function Fieldset({ id, legend, hint, children }: FieldsetProps): React.JSX.Element {
   return (
-    <fieldset className="fieldset">
+    <fieldset id={id} className="fieldset">
       <legend className="legend">{legend}</legend>
       {children}
       {hint ? <p className="hint">{hint}</p> : null}

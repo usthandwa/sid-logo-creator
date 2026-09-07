@@ -4,7 +4,9 @@ import { CreatorPage } from '@/features/creator/CreatorPage';
 import { LanguageLabPage } from '@/features/languageLab/LanguageLabPage';
 import { useActivations } from '@/hooks/useActivations';
 import { useTypeface } from '@/hooks/useTypeface';
+import { useWalkthrough } from '@/hooks/useWalkthrough';
 import { InstallPrompt } from '@/components/InstallPrompt';
+import { Walkthrough } from '@/components/Walkthrough';
 
 type View = 'creator' | 'lab';
 
@@ -12,6 +14,7 @@ export function App(): React.JSX.Element {
   const [view, setView] = useState<View>('creator');
   const typefaceState = useTypeface();
   const activations = useActivations();
+  const walkthrough = useWalkthrough();
 
   return (
     <div className="app">
@@ -44,6 +47,17 @@ export function App(): React.JSX.Element {
               }}
             >
               Language Lab
+            </button>
+            <button
+              type="button"
+              className="button button--ghost"
+              onClick={() => {
+                walkthrough.startWalkthrough();
+              }}
+              title="Restart the guided tutorial"
+              aria-label="Help - restart tutorial"
+            >
+              ?
             </button>
           </nav>
         </div>
@@ -78,6 +92,13 @@ export function App(): React.JSX.Element {
       </main>
 
       <InstallPrompt />
+
+      <Walkthrough
+        isActive={walkthrough.isActive}
+        currentStep={walkthrough.currentStep}
+        onNext={walkthrough.nextStep}
+        onSkip={walkthrough.skipWalkthrough}
+      />
 
       <footer className="app__footer">
         <p>
