@@ -23,11 +23,13 @@ export const lateral: LayoutFn = (spec, typeface) => {
 
   const paths: DrawablePath[] = [...symbol.paths];
   const boxes: Box[] = [symbol.box];
+  const wordmarkBaselines: number[] = [];
 
   lines.forEach((line, index) => {
     const baseline = lastBaseline - (lines.length - 1 - index) * lineStep;
     paths.push({ d: typeface.toPathData(line, wordmarkX, baseline, wordmarkSize) });
     boxes.push(typeface.inkBounds(line, wordmarkX, baseline, wordmarkSize));
+    wordmarkBaselines.push(baseline);
   });
 
   const wordmarkWidth = lines.reduce(
@@ -35,10 +37,12 @@ export const lateral: LayoutFn = (spec, typeface) => {
     0,
   );
 
+  // The identifier is not confined to the wordmark: in the published artwork
+  // it runs past the wordmark's right edge and sets the lockup's width itself.
   const identifier = buildIdentifierBlock(spec, typeface, {
     originX: wordmarkX,
     firstBaseline: lastBaseline + CONSTRUCTION.entityBaselineDrop * symbolHeight,
-    maxWidth: wordmarkWidth,
+    maxWidth: wordmarkWidth * CONSTRUCTION.secondaryRunOn,
     align: 'start',
   });
   paths.push(...identifier.paths);
@@ -52,5 +56,12 @@ export const lateral: LayoutFn = (spec, typeface) => {
     contentBox,
     paths,
     notes: identifier.notes,
+    guides: {
+      symbol: symbol.box,
+      wordmarkBaselines,
+      identifierBaselines: identifier.baselines,
+      wordmarkX,
+      clearSpace: padBox(contentBox, clearSpace),
+    },
   };
 };

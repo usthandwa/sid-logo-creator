@@ -73,4 +73,31 @@ describe('SVG export', () => {
     expect(viewBox[2]).toBeCloseTo(lockup.viewBox.width, 2);
     expect(viewBox[3]).toBeCloseTo(lockup.viewBox.height, 2);
   });
+
+  it('cannot leak construction guides into an exported file', () => {
+    // Guides live in `lockup.guides` and in the preview component only. The
+    // exporter serialises `paths`, so a lockup that carries guides must
+    // produce byte-identical output to one that does not.
+    const lockup = buildLockup(
+      {
+        layout: 'lateral',
+        wordmarkLines: wordmarkLines(requireLanguage('en')),
+        entityName: 'Rosettenville',
+        descriptor: 'Communication',
+        colour: '#000000',
+        includeClearSpace: false,
+        uppercaseEntityName: true,
+        locale: 'en',
+      },
+      testTypeface(),
+    );
+
+    expect(lockup.guides).toBeDefined();
+
+    const withGuides = toSvgString(lockup, { colour: '#000000', title: 'x' });
+    const withoutGuides = toSvgString({ ...lockup, guides: undefined }, { colour: '#000000', title: 'x' });
+
+    expect(withGuides).toBe(withoutGuides);
+    expect(withGuides).not.toContain('stroke');
+  });
 });

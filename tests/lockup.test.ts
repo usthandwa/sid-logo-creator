@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CONSTRUCTION, SYMBOL_UNITS } from '@/brand/constructionRules';
+import { CONSTRUCTION, SYMBOL_UNITS, secondaryTypeSize } from '@/brand/constructionRules';
 import { LANGUAGES, wordmarkLines, requireLanguage } from '@/brand/languages';
 import { buildLockup } from '@/core/buildLockup';
 import { LAYOUTS } from '@/core/layouts';
@@ -66,12 +66,49 @@ describe('the lockup engine', () => {
     expect(named.viewBox.width).toBeCloseTo(bare.viewBox.width, 1);
   });
 
-  it('wraps a long entity name rather than shrinking it first', () => {
+  it('reduces a long entity name before breaking it onto a second line', () => {
+    // adventist.design describes long secondary type as reduced, never wrapped,
+    // so a name that overruns must shrink while it still can.
     const long = buildLockup(
       spec({ entityName: 'Zimbabwe East Union Conference Headquarters Church' }),
       typeface,
     );
-    expect(long.notes).toContain('The entity name wraps onto two lines.');
+    expect(long.notes).toContain('The entity name was reduced to fit, within the permitted range.');
+    expect(long.notes).not.toContain('The entity name wraps onto two lines.');
+  });
+
+  it('lets the entity identifier run wider than the wordmark and set the lockup width', () => {
+    // The published clear-space reference shows the identifier extending past
+    // the wordmark's right edge, so it — not the wordmark — fixes the width.
+    const short = buildLockup(spec({ entityName: 'Solusi' }), typeface);
+    const long = buildLockup(
+      spec({ entityName: 'Zimbabwe East Union Conference Headquarters Church' }),
+      typeface,
+    );
+    expect(long.viewBox.width).toBeGreaterThan(short.viewBox.width);
+  });
+
+  it('never reduces the entity identifier below half the primary x-height', () => {
+    const absurd = buildLockup(
+      spec({
+        entityName:
+          'Southern Africa Indian Ocean Division Department of Family and Childrens Ministries',
+      }),
+      typeface,
+    );
+    // At the floor the name may finally break, but nothing may vanish or go
+    // non-finite in the process.
+    expect(absurd.paths.length).toBeGreaterThan(0);
+    expect(Number.isFinite(absurd.viewBox.width)).toBe(true);
+    for (const path of absurd.paths) expect(path.d).not.toContain('NaN');
+  });
+
+  it('derives the secondary type size from the 75% x-height rule', () => {
+    // The rule must reproduce the 0.211-of-symbol-height that was measured
+    // from official artwork; that agreement is what validates the derivation.
+    const derived = secondaryTypeSize(typeface.xHeight, CONSTRUCTION.wordmarkSize * SYMBOL_UNITS);
+    const measured = 0.211 * SYMBOL_UNITS;
+    expect(Math.abs(derived - measured) / measured).toBeLessThan(0.01);
   });
 
   it('adds the required clear space when asked, and none when not', () => {

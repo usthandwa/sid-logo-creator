@@ -38,6 +38,16 @@ export interface FitOptions {
   readonly maxLines: number;
   /** Smallest acceptable size, as a fraction of the nominal size. */
   readonly minScale?: number;
+  /**
+   * Reduce a single line toward `minScale` before breaking it.
+   *
+   * adventist.design describes long secondary type as being *reduced* — "if
+   * the secondary type is very long, it can be reduced to a minimum of 50% of
+   * the x-height" — and never as wrapping. The entity identifier therefore
+   * sets this; the wordmark, whose line breaks are authored per language, does
+   * not.
+   */
+  readonly preferSingleLine?: boolean;
 }
 
 const DEFAULT_MIN_SCALE = 0.62;
@@ -45,19 +55,37 @@ const DEFAULT_MIN_SCALE = 0.62;
 /**
  * Fits a single string into at most `maxLines` lines within `maxWidth`.
  *
- * The order matters: wrap first, shrink second. A long entity name should
- * break onto a second line at its full size before it is allowed to get
- * smaller, because small type on a lockup is harder to read than two lines.
+ * Two orders are available. By default a string wraps at full size before it
+ * is allowed to shrink, because small type is harder to read than two lines.
+ * With `preferSingleLine` the order inverts, matching how the identity
+ * guidelines describe secondary type.
  */
 export function fitText(
   text: string,
   typeface: Typeface,
-  { maxWidth, nominalSize, maxLines, minScale = DEFAULT_MIN_SCALE }: FitOptions,
+  {
+    maxWidth,
+    nominalSize,
+    maxLines,
+    minScale = DEFAULT_MIN_SCALE,
+    preferSingleLine = false,
+  }: FitOptions,
 ): FittedText {
   const trimmed = text.trim().replace(/\s+/g, ' ');
   if (!trimmed) return { lines: [], size: nominalSize, width: 0 };
 
-  for (let lineCount = 1; lineCount <= maxLines; lineCount += 1) {
+  const singleWidth = typeface.measureWidth(trimmed, nominalSize);
+  if (singleWidth <= maxWidth) return { lines: [trimmed], size: nominalSize, width: singleWidth };
+
+  if (preferSingleLine) {
+    const scale = maxWidth / singleWidth;
+    if (scale >= minScale) {
+      const size = nominalSize * scale;
+      return { lines: [trimmed], size, width: typeface.measureWidth(trimmed, size) };
+    }
+  }
+
+  for (let lineCount = 2; lineCount <= maxLines; lineCount += 1) {
     const lines = balanceLines(trimmed, typeface, nominalSize, lineCount);
     const width = widestLine(lines, typeface, nominalSize);
     if (width <= maxWidth) return { lines, size: nominalSize, width };

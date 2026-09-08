@@ -33,6 +33,7 @@ export interface CreatorState {
   readonly colourId: string;
   readonly surfaceId: string;
   readonly includeClearSpace: boolean;
+  readonly showGuides: boolean;
 }
 
 export interface CreatorApi extends CreatorState {
@@ -52,6 +53,7 @@ export interface CreatorApi extends CreatorState {
   readonly setColourId: (id: string) => void;
   readonly setSurfaceId: (id: string) => void;
   readonly setIncludeClearSpace: (value: boolean) => void;
+  readonly setShowGuides: (value: boolean) => void;
 }
 
 function firstTierOf(group: TierGroupId): TierId {
@@ -88,6 +90,7 @@ export function useCreatorState(
   const [descriptor, setDescriptor] = useState('');
   const [surfaceId, setSurfaceId] = useState<string>(DEFAULT_SURFACE_ID);
   const [includeClearSpace, setIncludeClearSpace] = useState(false);
+  const [showGuides, setShowGuides] = useState(false);
 
   const tier = requireTier(tierId);
 
@@ -142,6 +145,7 @@ export function useCreatorState(
     colourId,
     surfaceId,
     includeClearSpace,
+    showGuides,
     language,
     tier,
     layout,
@@ -165,5 +169,6 @@ export function useCreatorState(
     setColourId,
     setSurfaceId,
     setIncludeClearSpace,
+    setShowGuides,
   };
 }

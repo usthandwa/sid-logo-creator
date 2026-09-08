@@ -46,6 +46,33 @@ export interface LockupSpec {
   readonly includeClearSpace: boolean;
 }
 
+/**
+ * The construction lines behind a lockup: where the symbol sits, what the type
+ * is aligned to, and where the clear space falls.
+ *
+ * This is teaching material for the preview, not artwork. It is deliberately
+ * kept out of `paths` so that it cannot reach an exported file — see
+ * `exportSvg.ts`, which serialises `paths` alone.
+ */
+export interface LockupGuides {
+  /** The symbol's bounding box. */
+  readonly symbol: Box;
+  /** Baselines of the denomination wordmark, top to bottom. */
+  readonly wordmarkBaselines: readonly number[];
+  /** Baselines of the entity identifier block, top to bottom. */
+  readonly identifierBaselines: readonly number[];
+  /** x of the wordmark's alignment origin — the reading-aligned left edge. */
+  readonly wordmarkX: number;
+  /** The shared centre line. Present only for centred constructions. */
+  readonly centreX?: number;
+  /**
+   * The mandatory clear-space boundary, given whether or not `includeClearSpace`
+   * baked it into the viewBox. Always shown, so the rule is visible even when
+   * the file is cropped tight.
+   */
+  readonly clearSpace: Box;
+}
+
 /** What the engine produced. */
 export interface Lockup {
   readonly viewBox: Box;
@@ -54,6 +81,8 @@ export interface Lockup {
   readonly paths: readonly DrawablePath[];
   /** Diagnostics the UI can surface; never an error condition on its own. */
   readonly notes: readonly string[];
+  /** Construction lines for the preview. Never exported. */
+  readonly guides?: LockupGuides;
 }
 
 /** Font metrics and glyph outlines, normalised to em units. */

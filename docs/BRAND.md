@@ -20,17 +20,29 @@ templates, was measured in both constructions. Expressed against symbol height:
 | ------------------------- | ------------------ | ---------------- | ---------- |
 | Wordmark type size        | 0.5288             | 0.5291           | **0.529**  |
 | Wordmark line height (em) | 1.0045             | 1.0045           | **1.0045** |
-| Entity type size          | 0.2102             | 0.2115           | **0.211**  |
+| Entity type size          | 0.2102             | 0.2115           | *derived*  |
 | Entity baseline drop      | 0.5032             | 0.5085           | **0.504**  |
 | Symbol-to-wordmark gap    | 0.264 (horizontal) | 0.290 (vertical) | both       |
 
 The two constructions agree to within half a percent on every shared ratio. That agreement is what
 establishes these as the system rather than as one artboard's arrangement.
 
+### Entity type size is a rule, not a measurement
+
+adventist.design states it directly: "The maximum size for secondary type is 75% the x-height of the
+primary type. If the secondary type is very long, it can be reduced to a minimum of 50% of the
+x-height."
+
+Applying that to the wordmark gives `0.75 x 0.536 (x-height) x 0.529 (wordmark size) = 0.2127` of
+symbol height, against the 0.211 measured from artwork — agreement to 0.75%. The measured constant
+*was* the 75% rule all along, so the code now computes it from the loaded font's own x-height rather
+than hard-coding it. The floor is the same rule at 50%, which is two-thirds of nominal.
+
 Derived, not measured:
 
-- **Descriptor size** — 75% of the entity name, which is the maximum adventist.design allows for
-  secondary type.
+- **Descriptor size** — 75% of the entity name. Note this is *not* the 75% rule above, which governs
+  secondary type against primary. The guidelines describe only two levels of type; a third line is an
+  extrapolation this tool makes, and the ratio is chosen to match rather than sourced.
 - **Clear space** — twice the height of the lowercase letters, as specified for entity
   identifiers. Computed from the wordmark's x-height as reported by the font, not hard-coded.
 
@@ -62,12 +74,20 @@ worse than stopping.
 
 ## Fitting long names
 
-Wrap first, shrink second. A long entity name breaks onto a second line at full size before it is
-allowed to get smaller; only if two full-size lines still overflow does the type reduce, and then
-no further than 62% of nominal. Small type on a lockup is harder to read than two lines of it.
+**The identifier is not confined to the wordmark.** In the published clear-space reference the entity
+identifier runs well past the wordmark's right edge on a single line, and it — not the wordmark —
+sets the lockup's width and therefore its clear-space boundary. It may run to 1.5x the wordmark
+width, which is where the reference sits (about 1.47x) with a little room above it.
 
-The break point is chosen to make the two lines as even as possible, rather than greedily filling
-the first — a long first line over a two-word stub reads badly under a symbol.
+**Shrink first, break second.** The guidelines describe long secondary type as being *reduced*, and
+never as wrapping, so a name that overruns the run-on allowance shrinks toward the 50% floor while it
+still can. Only a name too long to fit even at the floor breaks onto a second line.
+
+This is the opposite of the wordmark's own behaviour, whose line breaks are authored per language and
+never recomputed. The two orders live behind `preferSingleLine` in `fitText`.
+
+Where a break is unavoidable, the point is chosen to make the two lines as even as possible, rather
+than greedily filling the first — a long first line over a two-word stub reads badly under a symbol.
 
 ## The registered-trademark mark
 

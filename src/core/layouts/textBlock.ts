@@ -5,7 +5,12 @@
  * Shared by every layout so the two constructions cannot drift apart.
  */
 
-import { CONSTRUCTION, SYMBOL_UNITS } from '@/brand/constructionRules';
+import {
+  CONSTRUCTION,
+  SECONDARY_MIN_SCALE,
+  SYMBOL_UNITS,
+  secondaryTypeSize,
+} from '@/brand/constructionRules';
 import { applyCase, fitText, unionBoxes } from '../geometry';
 import type { Box, DrawablePath, LockupSpec, Typeface } from '../types';
 
@@ -26,6 +31,8 @@ export interface IdentifierBlock {
   readonly box: Box;
   /** Baseline of the last line drawn, so a caller can continue below it. */
   readonly lastBaseline: number;
+  /** Every baseline drawn, top to bottom, for the construction guides. */
+  readonly baselines: readonly number[];
   readonly notes: readonly string[];
 }
 
@@ -33,6 +40,7 @@ const EMPTY: IdentifierBlock = {
   paths: [],
   box: { x: 0, y: 0, width: 0, height: 0 },
   lastBaseline: 0,
+  baselines: [],
   notes: [],
 };
 
@@ -45,10 +53,11 @@ export function buildIdentifierBlock(
   const descriptor = applyCase(spec.descriptor.trim(), spec.uppercaseEntityName, spec.locale);
   if (!name && !descriptor) return { ...EMPTY, lastBaseline: options.firstBaseline };
 
-  const nominal = CONSTRUCTION.entitySize * SYMBOL_UNITS;
+  const nominal = secondaryTypeSize(typeface.xHeight, CONSTRUCTION.wordmarkSize * SYMBOL_UNITS);
   const paths: DrawablePath[] = [];
   const boxes: Box[] = [];
   const notes: string[] = [];
+  const baselines: number[] = [];
   let baseline = options.firstBaseline;
 
   if (name) {
@@ -56,9 +65,11 @@ export function buildIdentifierBlock(
       maxWidth: options.maxWidth,
       nominalSize: nominal,
       maxLines: 2,
+      minScale: SECONDARY_MIN_SCALE,
+      preferSingleLine: true,
     });
     if (fitted.size < nominal - 0.01) {
-      notes.push('The entity name was reduced to fit the lockup width.');
+      notes.push('The entity name was reduced to fit, within the permitted range.');
     }
     if (fitted.lines.length > 1) {
       notes.push('The entity name wraps onto two lines.');
@@ -68,6 +79,7 @@ export function buildIdentifierBlock(
       const x = alignX(line, typeface, fitted.size, options);
       paths.push({ d: typeface.toPathData(line, x, lineBaseline, fitted.size) });
       boxes.push(typeface.inkBounds(line, x, lineBaseline, fitted.size));
+      baselines.push(lineBaseline);
     }
     baseline += (fitted.lines.length - 1) * fitted.size * CONSTRUCTION.entityLineHeight;
 
@@ -77,6 +89,8 @@ export function buildIdentifierBlock(
         maxWidth: options.maxWidth,
         nominalSize: descriptorSize,
         maxLines: 2,
+        minScale: SECONDARY_MIN_SCALE,
+        preferSingleLine: true,
       });
       for (const [index, line] of fittedDescriptor.lines.entries()) {
         baseline +=
@@ -86,6 +100,7 @@ export function buildIdentifierBlock(
         const x = alignX(line, typeface, fittedDescriptor.size, options);
         paths.push({ d: typeface.toPathData(line, x, baseline, fittedDescriptor.size) });
         boxes.push(typeface.inkBounds(line, x, baseline, fittedDescriptor.size));
+        baselines.push(baseline);
       }
     }
   } else if (descriptor) {
@@ -94,17 +109,20 @@ export function buildIdentifierBlock(
       maxWidth: options.maxWidth,
       nominalSize: nominal,
       maxLines: 2,
+      minScale: SECONDARY_MIN_SCALE,
+      preferSingleLine: true,
     });
     for (const [index, line] of fitted.lines.entries()) {
       const lineBaseline = baseline + index * fitted.size * CONSTRUCTION.entityLineHeight;
       const x = alignX(line, typeface, fitted.size, options);
       paths.push({ d: typeface.toPathData(line, x, lineBaseline, fitted.size) });
       boxes.push(typeface.inkBounds(line, x, lineBaseline, fitted.size));
+      baselines.push(lineBaseline);
     }
     baseline += (fitted.lines.length - 1) * fitted.size * CONSTRUCTION.entityLineHeight;
   }
 
-  return { paths, box: unionBoxes(boxes), lastBaseline: baseline, notes };
+  return { paths, box: unionBoxes(boxes), lastBaseline: baseline, baselines, notes };
 }
 
 function alignX(

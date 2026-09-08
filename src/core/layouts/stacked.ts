@@ -32,20 +32,24 @@ export const stacked: LayoutFn = (spec, typeface) => {
 
   const paths: DrawablePath[] = [...symbol.paths];
   const boxes: Box[] = [symbol.box];
+  const wordmarkBaselines: number[] = [];
 
   lines.forEach((line, index) => {
     const baseline = firstBaseline + index * lineStep;
     const x = centreX - typeface.measureWidth(line, wordmarkSize) / 2;
     paths.push({ d: typeface.toPathData(line, x, baseline, wordmarkSize) });
     boxes.push(typeface.inkBounds(line, x, baseline, wordmarkSize));
+    wordmarkBaselines.push(baseline);
   });
 
   const wordmarkLastBaseline = firstBaseline + (lines.length - 1) * lineStep;
 
+  // As in the lateral construction, the identifier may run wider than the
+  // wordmark and set the lockup's width itself.
   const identifier = buildIdentifierBlock(spec, typeface, {
     originX: centreX,
     firstBaseline: wordmarkLastBaseline + CONSTRUCTION.entityBaselineDrop * symbolHeight,
-    maxWidth: Math.max(wordmarkWidth, symbolWidth),
+    maxWidth: Math.max(wordmarkWidth, symbolWidth) * CONSTRUCTION.secondaryRunOn,
     align: 'middle',
   });
   paths.push(...identifier.paths);
@@ -59,5 +63,13 @@ export const stacked: LayoutFn = (spec, typeface) => {
     contentBox,
     paths,
     notes: identifier.notes,
+    guides: {
+      symbol: symbol.box,
+      wordmarkBaselines,
+      identifierBaselines: identifier.baselines,
+      wordmarkX: centreX - wordmarkWidth / 2,
+      centreX,
+      clearSpace: padBox(contentBox, clearSpace),
+    },
   };
 };

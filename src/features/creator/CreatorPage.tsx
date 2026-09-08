@@ -149,6 +149,24 @@ export function CreatorPage({ typeface, languages }: Props): React.JSX.Element {
         </Fieldset>
 
         <Fieldset
+          id="walkthrough-guides"
+          legend="Construction guides"
+          hint="Shows the symbol box, the baselines the type is set on, and the clear-space boundary. Preview only — never part of the downloaded file."
+        >
+          <ChoiceGroup
+            label="Construction guides"
+            value={state.showGuides ? 'on' : 'off'}
+            choices={[
+              { id: 'off', label: 'Hide' },
+              { id: 'on', label: 'Show' },
+            ]}
+            onChange={(value) => {
+              state.setShowGuides(value === 'on');
+            }}
+          />
+        </Fieldset>
+
+        <Fieldset
           id="walkthrough-clear-space"
           legend="Clear space"
           hint={`Adds the required clear space — twice the height of the lowercase letters — inside the file, so the artwork cannot be crowded when it is placed.`}
@@ -178,6 +196,7 @@ export function CreatorPage({ typeface, languages }: Props): React.JSX.Element {
             lockup={state.lockup}
             colour={state.colourHex}
             title={title}
+            showGuides={state.showGuides}
           />
         </div>
 
