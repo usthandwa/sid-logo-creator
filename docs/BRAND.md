@@ -99,6 +99,12 @@ Two marks appear in an English lockup, and both are correct:
 Which languages carry the wordmark mark is per-language data
 (`registeredMarkAfter` in the language registry), not a global rule.
 
+**The symbol's mark is not yet per-language, and should be.** SID's published vernacular logos mark
+the symbol ™ where this tool draws ®, and Afrikaans takes ™ after "Adventiste" where
+`wordmarkLines()` inserts ®. English artwork does use ®, so the mark varies by language rather than
+being the constant it is modelled as. The seven SID vernaculars are held staged for this reason
+alone — their wording is confirmed. See `docs/reference/sid-church-logos/`.
+
 ## Minimum sizes
 
 25 mm wide in print, 96 px on screen. Below that the interior counters of the symbol close up and
@@ -108,6 +114,7 @@ the flame reads as a solid mass. The creator states these next to the preview.
 
 ## Sources
 
+- [SID church logos](reference/sid-church-logos/) — the published artwork this tool is checked against
 - [Adventist identity guidelines](https://www.adventist.design)
 - [Entity identifiers](https://www.adventist.design/using-the-system/entity-identifiers/)
 - [Advent Sans](https://www.adventist.design/global-elements/advent-sans/)

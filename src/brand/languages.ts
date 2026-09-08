@@ -132,10 +132,13 @@ const ACTIVE: readonly LanguageDef[] = [
  *
  * This list once held every language of the SID territory, each with wording
  * translated from "Seventh-day Adventist Church". Checking the seven against
- * SID's own published artwork (170529-<Language>.pdf on the regional-extension
- * page) showed that assumption to be wrong in every single case: the vernacular
- * logos do not translate the denomination's name, they name the Sabbath —
- * Zulu reads "iNkonzo ya ma Sabatha", not "Isonto lamaSeventh-day Adventist".
+ * SID's own published artwork showed that assumption to be wrong in every
+ * single case: the vernacular logos do not translate the denomination's name,
+ * they name the Sabbath — Zulu reads "iNkonzo ya ma Sabatha", not
+ * "Isonto lamaSeventh-day Adventist".
+ *
+ * The artwork is kept in docs/reference/sid-church-logos/. Check any change to
+ * these seven against it rather than against a translation.
  *
  * The unverifiable entries were therefore removed rather than left to be
  * promoted by mistake. SID publishes artwork in nine languages only; a
