@@ -10,9 +10,8 @@
 import type { LayoutFn } from '../types';
 import { lateral } from './lateral';
 import { stacked } from './stacked';
-import { symbolOnly } from './symbolOnly';
 
-export type LayoutId = 'lateral' | 'stacked' | 'symbol';
+export type LayoutId = 'lateral' | 'stacked';
 
 export interface LayoutDef {
   readonly id: LayoutId;
@@ -37,13 +36,6 @@ export const LAYOUTS: readonly LayoutDef[] = [
     help: 'Symbol above the name, centred. For narrow spaces.',
     build: stacked,
     carriesEntityName: true,
-  },
-  {
-    id: 'symbol',
-    label: 'Symbol only',
-    help: 'The church symbol alone, for avatars and icons.',
-    build: symbolOnly,
-    carriesEntityName: false,
   },
 ];
 

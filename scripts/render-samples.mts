@@ -86,14 +86,6 @@ const SAMPLES: readonly Sample[] = [
     colour: '#12100b',
   },
   {
-    name: '07-symbol-only',
-    language: 'en',
-    layout: 'symbol',
-    entityName: '',
-    descriptor: '',
-    colour: '#12100b',
-  },
-  {
     name: '08-staged-af-lateral',
     language: 'af',
     layout: 'lateral',
@@ -110,10 +102,10 @@ const SAMPLES: readonly Sample[] = [
     colour: '#12100b',
   },
   {
-    name: '10-staged-mg-stacked',
-    language: 'mg',
+    name: '10-staged-zu-stacked',
+    language: 'zu',
     layout: 'stacked',
-    entityName: 'Toamasina',
+    entityName: 'Kwa-Mashu',
     descriptor: '',
     colour: '#12100b',
   },

@@ -54,15 +54,9 @@ export function LockupPreview({
         ))}
       </g>
       {guides ? (
-        <g
-          fill="none"
-          stroke={GUIDE_COLOUR}
-          strokeWidth={1}
-          vectorEffect="non-scaling-stroke"
-          pointerEvents="none"
-          aria-hidden="true"
-        >
+        <g fill="none" stroke={GUIDE_COLOUR} strokeWidth={1} pointerEvents="none" aria-hidden="true">
           <rect
+            vectorEffect="non-scaling-stroke"
             x={round(guides.clearSpace.x, 3)}
             y={round(guides.clearSpace.y, 3)}
             width={round(guides.clearSpace.width, 3)}
@@ -70,6 +64,7 @@ export function LockupPreview({
             strokeDasharray="8 6"
           />
           <rect
+            vectorEffect="non-scaling-stroke"
             x={round(guides.symbol.x, 3)}
             y={round(guides.symbol.y, 3)}
             width={round(guides.symbol.width, 3)}
@@ -77,6 +72,7 @@ export function LockupPreview({
           />
           {guides.wordmarkBaselines.map((baseline) => (
             <line
+              vectorEffect="non-scaling-stroke"
               key={`w${String(baseline)}`}
               x1={round(x, 3)}
               x2={round(x + width, 3)}
@@ -86,6 +82,7 @@ export function LockupPreview({
           ))}
           {guides.identifierBaselines.map((baseline) => (
             <line
+              vectorEffect="non-scaling-stroke"
               key={`i${String(baseline)}`}
               x1={round(x, 3)}
               x2={round(x + width, 3)}
@@ -95,6 +92,7 @@ export function LockupPreview({
             />
           ))}
           <line
+              vectorEffect="non-scaling-stroke"
             x1={round(guides.wordmarkX, 3)}
             x2={round(guides.wordmarkX, 3)}
             y1={round(y, 3)}
@@ -102,6 +100,7 @@ export function LockupPreview({
           />
           {guides.centreX === undefined ? null : (
             <line
+              vectorEffect="non-scaling-stroke"
               x1={round(guides.centreX, 3)}
               x2={round(guides.centreX, 3)}
               y1={round(y, 3)}

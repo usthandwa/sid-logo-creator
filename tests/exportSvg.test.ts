@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { requireLanguage, wordmarkLines } from '@/brand/languages';
 import { buildLockup } from '@/core/buildLockup';
 import { toSvgString } from '@/core/exportSvg';
-import type { LockupSpec } from '@/core/types';
+import type { Lockup, LockupSpec } from '@/core/types';
 import { testTypeface } from './fixtures';
 
 const typeface = testTypeface();
@@ -94,8 +94,14 @@ describe('SVG export', () => {
 
     expect(lockup.guides).toBeDefined();
 
+    const guideless: Lockup = {
+      viewBox: lockup.viewBox,
+      contentBox: lockup.contentBox,
+      paths: lockup.paths,
+      notes: lockup.notes,
+    };
     const withGuides = toSvgString(lockup, { colour: '#000000', title: 'x' });
-    const withoutGuides = toSvgString({ ...lockup, guides: undefined }, { colour: '#000000', title: 'x' });
+    const withoutGuides = toSvgString(guideless, { colour: '#000000', title: 'x' });
 
     expect(withGuides).toBe(withoutGuides);
     expect(withGuides).not.toContain('stroke');

@@ -4,22 +4,20 @@
  * A tier is a kind of denominational entity. It decides which fields the
  * creator asks for, which layouts make sense, and how the entity name is set.
  *
- * Adding a tier is one entry here plus, if it needs new wording, a label in
- * each language's `tierLabels` in ./languages.ts.
+ * Adding a tier is one entry here; the UI, the layouts and the creator state
+ * pick it up with no further changes.
  */
 
 import type { LayoutId } from '@/core/layouts';
 
 export type TierId =
   | 'church'
-  | 'company'
   | 'conference'
   | 'field'
   | 'mission'
   | 'union'
   | 'division'
   | 'institution'
-  | 'department'
   | 'ministry'
   | 'media';
 
@@ -50,16 +48,7 @@ export const TIERS: readonly TierDef[] = [
     label: 'Church',
     help: 'An organised local congregation.',
     namePlaceholder: 'e.g. Rosettenville',
-    layouts: ['lateral', 'stacked', 'symbol'],
-    allowsDescriptor: false,
-    group: 'congregations',
-  },
-  {
-    id: 'company',
-    label: 'Company',
-    help: 'A company or group not yet organised as a church.',
-    namePlaceholder: 'e.g. Kwa-Thema Central',
-    layouts: ['lateral', 'stacked', 'symbol'],
+    layouts: ['lateral', 'stacked'],
     allowsDescriptor: false,
     group: 'congregations',
   },
@@ -68,7 +57,7 @@ export const TIERS: readonly TierDef[] = [
     label: 'Conference',
     help: 'An organised conference within a union.',
     namePlaceholder: 'e.g. Northern Conference',
-    layouts: ['lateral', 'stacked', 'symbol'],
+    layouts: ['lateral', 'stacked'],
     allowsDescriptor: true,
     descriptorPlaceholder: 'e.g. Stewardship',
     group: 'administration',
@@ -78,7 +67,7 @@ export const TIERS: readonly TierDef[] = [
     label: 'Field',
     help: 'A field operating under a union or conference.',
     namePlaceholder: 'e.g. Limpopo Field',
-    layouts: ['lateral', 'stacked', 'symbol'],
+    layouts: ['lateral', 'stacked'],
     allowsDescriptor: true,
     descriptorPlaceholder: 'e.g. Youth Ministries',
     group: 'administration',
@@ -88,7 +77,7 @@ export const TIERS: readonly TierDef[] = [
     label: 'Mission',
     help: 'A mission operating under a union or the division.',
     namePlaceholder: 'e.g. São Tomé and Príncipe Mission',
-    layouts: ['lateral', 'stacked', 'symbol'],
+    layouts: ['lateral', 'stacked'],
     allowsDescriptor: true,
     descriptorPlaceholder: 'e.g. Communication',
     group: 'administration',
@@ -98,7 +87,7 @@ export const TIERS: readonly TierDef[] = [
     label: 'Union',
     help: 'A union conference or union mission.',
     namePlaceholder: 'e.g. Zimbabwe East Union Conference',
-    layouts: ['lateral', 'stacked', 'symbol'],
+    layouts: ['lateral', 'stacked'],
     allowsDescriptor: true,
     descriptorPlaceholder: 'e.g. Publishing',
     group: 'administration',
@@ -108,7 +97,7 @@ export const TIERS: readonly TierDef[] = [
     label: 'Division',
     help: 'The division office and its directorates.',
     namePlaceholder: 'e.g. Southern Africa-Indian Ocean Division',
-    layouts: ['lateral', 'stacked', 'symbol'],
+    layouts: ['lateral', 'stacked'],
     allowsDescriptor: true,
     descriptorPlaceholder: 'e.g. Communication',
     group: 'administration',
@@ -118,19 +107,9 @@ export const TIERS: readonly TierDef[] = [
     label: 'Institution',
     help: 'A school, university, hospital, clinic or publishing house.',
     namePlaceholder: 'e.g. Solusi University',
-    layouts: ['lateral', 'stacked', 'symbol'],
-    allowsDescriptor: true,
-    descriptorPlaceholder: 'e.g. Faculty of Theology',
-    group: 'entities',
-  },
-  {
-    id: 'department',
-    label: 'Department',
-    help: 'A departmental lockup for an office within an entity.',
-    namePlaceholder: 'e.g. Southern Africa-Indian Ocean Division',
     layouts: ['lateral', 'stacked'],
     allowsDescriptor: true,
-    descriptorPlaceholder: 'e.g. Family Ministries',
+    descriptorPlaceholder: 'e.g. Faculty of Theology',
     group: 'entities',
   },
   {
@@ -148,7 +127,7 @@ export const TIERS: readonly TierDef[] = [
     label: 'Media',
     help: 'A division media entity or broadcast service.',
     namePlaceholder: 'e.g. Adventist World Radio',
-    layouts: ['lateral', 'stacked', 'symbol'],
+    layouts: ['lateral', 'stacked'],
     allowsDescriptor: true,
     descriptorPlaceholder: 'e.g. Southern Africa-Indian Ocean Division',
     group: 'entities',
@@ -156,9 +135,9 @@ export const TIERS: readonly TierDef[] = [
 ];
 
 export const TIER_GROUPS = [
-  { id: 'congregations', label: 'Churches & companies' },
+  { id: 'congregations', label: 'Churches' },
   { id: 'administration', label: 'Conferences & unions' },
-  { id: 'entities', label: 'Institutions & departments' },
+  { id: 'entities', label: 'Institutions & ministries' },
 ] as const;
 
 export type TierGroupId = (typeof TIER_GROUPS)[number]['id'];

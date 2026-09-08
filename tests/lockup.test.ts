@@ -3,7 +3,6 @@ import { CONSTRUCTION, SYMBOL_UNITS, secondaryTypeSize } from '@/brand/construct
 import { LANGUAGES, wordmarkLines, requireLanguage } from '@/brand/languages';
 import { buildLockup } from '@/core/buildLockup';
 import { LAYOUTS } from '@/core/layouts';
-import { SYMBOL_ASPECT_RATIO } from '@/brand/symbol';
 import type { LockupSpec } from '@/core/types';
 import { testTypeface } from './fixtures';
 
@@ -51,12 +50,6 @@ describe('the lockup engine', () => {
       expect(path.d).toMatch(/^M/);
       expect(path.d).not.toContain('NaN');
     }
-  });
-
-  it('keeps the symbol at its published proportions', () => {
-    const lockup = buildLockup(spec({ layout: 'symbol' }), typeface);
-    const ratio = lockup.contentBox.width / lockup.contentBox.height;
-    expect(ratio).toBeCloseTo(SYMBOL_ASPECT_RATIO, 3);
   });
 
   it('grows downwards, not sideways, when an entity name is added laterally', () => {
@@ -138,11 +131,5 @@ describe('the lockup engine', () => {
     // centre must coincide with it.
     expect(Number.isFinite(centre)).toBe(true);
     expect(lockup.contentBox.height).toBeGreaterThan(lockup.contentBox.width * 0.4);
-  });
-
-  it('omits the entity name from the symbol-only layout', () => {
-    const bare = buildLockup(spec({ layout: 'symbol' }), typeface);
-    const named = buildLockup(spec({ layout: 'symbol', entityName: 'Anywhere' }), typeface);
-    expect(named.paths).toHaveLength(bare.paths.length);
   });
 });

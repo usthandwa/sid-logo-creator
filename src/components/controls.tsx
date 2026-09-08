@@ -155,11 +155,3 @@ export function StackedGlyph(): React.JSX.Element {
     </svg>
   );
 }
-
-export function SymbolGlyph(): React.JSX.Element {
-  return (
-    <svg className="choice__glyph" width="34" height="18" viewBox="0 0 34 18" aria-hidden="true">
-      <rect x="11" y="1" width="12" height="16" rx="1.5" fill="currentColor" opacity="0.85" />
-    </svg>
-  );
-}

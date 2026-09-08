@@ -154,8 +154,11 @@ select {
 }
 
 @media (width >= 60rem) {
+  /* The preview is the point of the tool, so it takes the larger share: the
+     controls settle at a readable fixed width and the stage gets the rest,
+     which lands around 70% of the page at common widths. */
   .creator {
-    grid-template-columns: minmax(0, 1fr) minmax(20rem, 24rem);
+    grid-template-columns: minmax(18rem, 22rem) minmax(0, 1fr);
   }
 
   .creator__stage {
@@ -328,7 +331,7 @@ select {
 .stage__surface {
   border-radius: var(--radius);
   border: 1px solid var(--line);
-  min-height: 16rem;
+  min-height: min(60vh, 32rem);
   display: grid;
   place-items: center;
   padding: var(--space-4);
@@ -356,7 +359,9 @@ select {
   width: 100%;
   max-width: 100%;
   height: auto;
-  max-height: 24rem;
+  /* Sized against the window rather than a fixed cap, so a wide screen
+     actually shows the artwork large. */
+  max-height: 70vh;
 }
 
 .stage__meta {

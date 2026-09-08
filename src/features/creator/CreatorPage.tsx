@@ -8,13 +8,12 @@ import {
   Fieldset,
   LateralGlyph,
   StackedGlyph,
-  SymbolGlyph,
   TextField,
   type Choice,
 } from '@/components/controls';
 import { LockupPreview } from '@/components/LockupPreview';
 import { round } from '@/core/geometry';
-import type { LayoutId } from '@/core/layouts';
+import { requireLayout, type LayoutId } from '@/core/layouts';
 import type { Typeface } from '@/core/types';
 import { DownloadPanel } from './DownloadPanel';
 import { useCreatorState } from './useCreatorState';
@@ -22,7 +21,6 @@ import { useCreatorState } from './useCreatorState';
 const LAYOUT_GLYPHS: Record<LayoutId, React.JSX.Element> = {
   lateral: <LateralGlyph />,
   stacked: <StackedGlyph />,
-  symbol: <SymbolGlyph />,
 };
 
 interface Props {
@@ -98,8 +96,7 @@ export function CreatorPage({ typeface, languages }: Props): React.JSX.Element {
             value={state.layoutId}
             choices={state.tier.layouts.map((id): Choice<LayoutId> => ({
               id,
-              label:
-                id === 'lateral' ? 'Horizontal' : id === 'stacked' ? 'Vertical' : 'Symbol only',
+              label: requireLayout(id).label,
               glyph: LAYOUT_GLYPHS[id],
             }))}
             onChange={state.setLayoutId}
@@ -149,7 +146,6 @@ export function CreatorPage({ typeface, languages }: Props): React.JSX.Element {
         </Fieldset>
 
         <Fieldset
-          id="walkthrough-guides"
           legend="Construction guides"
           hint="Shows the symbol box, the baselines the type is set on, and the clear-space boundary. Preview only — never part of the downloaded file."
         >

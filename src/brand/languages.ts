@@ -30,7 +30,6 @@
  * communication director has confirmed the wording.
  */
 
-import type { TierId } from './tiers';
 
 export type LanguageStatus = 'active' | 'staged';
 
@@ -64,8 +63,6 @@ export interface LanguageDef {
    * after "Adventist" in English. Omit where the mark is not used.
    */
   readonly registeredMarkAfter?: string;
-  /** Entity-type words, used for the descriptor line under an entity name. */
-  readonly tierLabels?: Partial<Record<TierId, string>>;
   /** ISO 3166-1 alpha-2 codes of SID territories where the language is used. */
   readonly territories: readonly string[];
   readonly approval: LanguageApproval;
@@ -75,8 +72,10 @@ export interface LanguageDef {
  * Active languages
  *
  * The four working languages carried over from the reference implementation.
- * English, Portuguese and French are SID's administrative languages; Spanish
- * is retained for cross-division and General Conference material.
+ * English, Portuguese and French are SID's administrative languages. The SID
+ * regional extension publishes church logos in Afrikaans, French, Portuguese,
+ * Shona, Siswati, South Sotho, Tswana, Xhosa and Zulu — and in no other
+ * language, which is why Spanish is not offered here.
  * ──────────────────────────────────────────────────────────────────────────── */
 
 const ACTIVE: readonly LanguageDef[] = [
@@ -88,19 +87,6 @@ const ACTIVE: readonly LanguageDef[] = [
     direction: 'ltr',
     wordmark: ['Seventh-day', 'Adventist Church'],
     registeredMarkAfter: 'Adventist',
-    tierLabels: {
-      church: 'Church',
-      company: 'Company',
-      conference: 'Conference',
-      field: 'Field',
-      mission: 'Mission',
-      union: 'Union',
-      division: 'Division',
-      institution: 'Institution',
-      department: 'Department',
-      ministry: 'Ministry',
-      media: 'Media',
-    },
     territories: ['BW', 'LS', 'MW', 'MU', 'NA', 'SC', 'ZA', 'SZ', 'ZM', 'ZW', 'SH'],
     approval: {
       verified: true,
@@ -116,19 +102,6 @@ const ACTIVE: readonly LanguageDef[] = [
     status: 'active',
     direction: 'ltr',
     wordmark: ['Igreja Adventista', 'do Sétimo Dia'],
-    tierLabels: {
-      church: 'Igreja',
-      company: 'Congregação',
-      conference: 'Associação',
-      field: 'Campo',
-      mission: 'Missão',
-      union: 'União',
-      division: 'Divisão',
-      institution: 'Instituição',
-      department: 'Departamento',
-      ministry: 'Ministério',
-      media: 'Comunicação',
-    },
     territories: ['AO', 'MZ', 'ST'],
     approval: {
       verified: true,
@@ -143,19 +116,6 @@ const ACTIVE: readonly LanguageDef[] = [
     status: 'active',
     direction: 'ltr',
     wordmark: ['Église Adventiste', 'du Septième Jour'],
-    tierLabels: {
-      church: 'Église',
-      company: 'Groupe',
-      conference: 'Fédération',
-      field: 'Champ',
-      mission: 'Mission',
-      union: 'Union',
-      division: 'Division',
-      institution: 'Institution',
-      department: 'Département',
-      ministry: 'Ministère',
-      media: 'Communication',
-    },
     territories: ['MG', 'MU', 'RE', 'YT', 'KM', 'SC'],
     approval: {
       verified: true,
@@ -163,41 +123,23 @@ const ACTIVE: readonly LanguageDef[] = [
       approvedOn: '2017-04-01',
     },
   },
-  {
-    code: 'es',
-    endonym: 'Español',
-    englishName: 'Spanish',
-    status: 'active',
-    direction: 'ltr',
-    wordmark: ['Iglesia Adventista', 'del Séptimo Día'],
-    tierLabels: {
-      church: 'Iglesia',
-      company: 'Grupo',
-      conference: 'Asociación',
-      field: 'Campo',
-      mission: 'Misión',
-      union: 'Unión',
-      division: 'División',
-      institution: 'Institución',
-      department: 'Departamento',
-      ministry: 'Ministerio',
-      media: 'Comunicación',
-    },
-    territories: [],
-    approval: {
-      verified: true,
-      approvedBy: 'General Conference identity guidelines',
-      approvedOn: '2017-04-01',
-      note: 'Retained for General Conference and inter-division material.',
-    },
-  },
 ];
 
 /* ────────────────────────────────────────────────────────────────────────────
- * Staged languages — every other language of the SID territory
+ * Staged languages — the SID vernaculars awaiting activation
  *
- * Grouped by union so a communication director can verify their own set.
  * All are `verified: false` until confirmed. Do not activate without approval.
+ *
+ * This list once held every language of the SID territory, each with wording
+ * translated from "Seventh-day Adventist Church". Checking the seven against
+ * SID's own published artwork (170529-<Language>.pdf on the regional-extension
+ * page) showed that assumption to be wrong in every single case: the vernacular
+ * logos do not translate the denomination's name, they name the Sabbath —
+ * Zulu reads "iNkonzo ya ma Sabatha", not "Isonto lamaSeventh-day Adventist".
+ *
+ * The unverifiable entries were therefore removed rather than left to be
+ * promoted by mistake. SID publishes artwork in nine languages only; a
+ * language absent from that set cannot be checked and does not belong here.
  * ──────────────────────────────────────────────────────────────────────────── */
 
 const DRAFT: LanguageApproval = {
@@ -211,7 +153,6 @@ function staged(
   englishName: string,
   wordmark: readonly string[],
   territories: readonly string[],
-  tierLabels?: Partial<Record<TierId, string>>,
 ): LanguageDef {
   return {
     code,
@@ -222,217 +163,25 @@ function staged(
     wordmark,
     territories,
     approval: DRAFT,
-    ...(tierLabels ? { tierLabels } : {}),
   };
 }
 
 const STAGED: readonly LanguageDef[] = [
+  // These seven are the vernaculars SID actually publishes artwork for, and
+  // their wording is transcribed from that artwork rather than translated.
+  // They stay staged only because the published logos mark the symbol with ™
+  // where this tool draws ®; the wording itself is confirmed.
+  //
   // ── South Africa Union Conference ────────────────────────────────────────
-  staged('af', 'Afrikaans', 'Afrikaans', ['Sewendedag-', 'Adventistekerk'], ['ZA', 'NA'], {
-    church: 'Kerk',
-    conference: 'Konferensie',
-    union: 'Unie',
-  }),
-  staged('zu', 'isiZulu', 'Zulu', ['Isonto lamaSeventh-day', 'Adventist'], ['ZA', 'SZ'], {
-    church: 'Isonto',
-  }),
-  staged('xh', 'isiXhosa', 'Xhosa', ['ICawe yamaSeventh-day', 'Adventist'], ['ZA'], {
-    church: 'ICawe',
-  }),
-  staged(
-    'nso',
-    'Sepedi',
-    'Northern Sotho',
-    ['Kereke ya Baadventiste', 'ba Letšatši la Bošupa'],
-    ['ZA'],
-    {
-      church: 'Kereke',
-    },
-  ),
-  staged(
-    'st',
-    'Sesotho',
-    'Southern Sotho',
-    ['Kereke ya Baadventiste', 'ba Letsatsi la Bosupa'],
-    ['ZA', 'LS'],
-    {
-      church: 'Kereke',
-    },
-  ),
-  staged(
-    'tn',
-    'Setswana',
-    'Tswana',
-    ['Kereke ya Baadventiste', 'ba Letsatsi la Bosupa'],
-    ['ZA', 'BW'],
-    {
-      church: 'Kereke',
-    },
-  ),
-  staged(
-    'ts',
-    'Xitsonga',
-    'Tsonga',
-    ['Kereke ya Vaadventista', 'va Siku ra Vunkombo'],
-    ['ZA', 'MZ'],
-    {
-      church: 'Kereke',
-    },
-  ),
-  staged('ve', 'Tshivenḓa', 'Venda', ['Kereke ya Vhaadventista', 'vha Ḓuvha ḽa Vhusumbe'], ['ZA'], {
-    church: 'Kereke',
-  }),
-  staged('ss', 'siSwati', 'Swati', ['LiBandla lemaSeventh-day', 'Adventist'], ['SZ', 'ZA'], {
-    church: 'LiBandla',
-  }),
-  staged('nr', 'isiNdebele', 'Southern Ndebele', ['IBandla lamaSeventh-day', 'Adventist'], ['ZA'], {
-    church: 'IBandla',
-  }),
+  staged('af', 'Afrikaans', 'Afrikaans', ['Sewende-dag', 'Adventiste Kerk'], ['ZA', 'NA']),
+  staged('zu', 'isiZulu', 'Zulu', ['iNkonzo ya', 'ma Sabatha'], ['ZA', 'SZ']),
+  staged('xh', 'isiXhosa', 'Xhosa', ['iBandla la', 'Ma-Sabatha'], ['ZA']),
+  staged('st', 'Sesotho', 'Southern Sotho', ['Kereke', 'ea Sabata'], ['ZA', 'LS']),
+  staged('tn', 'Setswana', 'Tswana', ['Kereke', 'ya Sabata'], ['ZA', 'BW']),
+  staged('ss', 'siSwati', 'Swati', ['Libandla', 'lemaSabatha'], ['SZ', 'ZA']),
 
   // ── Zimbabwe (Central, East and West Union Conferences) ──────────────────
-  staged('sn', 'chiShona', 'Shona', ['Chechi yeVaAdventista', 'veZuva reChinomwe'], ['ZW'], {
-    church: 'Chechi',
-    conference: 'Danho',
-  }),
-  staged('nd', 'isiNdebele', 'Northern Ndebele', ['IBandla lamaSeventh-day', 'Adventist'], ['ZW'], {
-    church: 'IBandla',
-  }),
-  staged('ndc', 'chiNdau', 'Ndau', ['Chechi yeVaAdventista', 'veZuva reChinomwe'], ['ZW', 'MZ']),
-
-  // ── Malawi Union Conference ──────────────────────────────────────────────
-  staged(
-    'ny',
-    'Chichewa',
-    'Chichewa / Nyanja',
-    ['Mpingo wa Adventist wa', 'Tsiku Lachisanu ndi Chiwiri'],
-    ['MW', 'ZM', 'MZ'],
-    {
-      church: 'Mpingo',
-    },
-  ),
-  staged(
-    'tum',
-    'chiTumbuka',
-    'Tumbuka',
-    ['Mpingo wa Adventist wa', 'Zuŵa Lachinkhondi na Chiŵiri'],
-    ['MW', 'ZM'],
-  ),
-  staged(
-    'yao',
-    'Chiyao',
-    'Yao',
-    ['Mpingo wa Adventist wa', 'Lisiku Lyacisano ni Liŵili'],
-    ['MW', 'MZ'],
-  ),
-
-  // ── Northern and Southern Zambia Union Conferences ───────────────────────
-  staged(
-    'bem',
-    'Ichibemba',
-    'Bemba',
-    ['Icalici ca BaAdventist', 'aba Bushiku bwa Cinelubali'],
-    ['ZM'],
-    {
-      church: 'Icalici',
-    },
-  ),
-  staged(
-    'toi',
-    'Chitonga',
-    'Tonga (Zambia)',
-    ['Mbungano ya BaAdventist', 'ba Buzuba bwa Chilombwe'],
-    ['ZM', 'ZW'],
-  ),
-  staged('loz', 'Silozi', 'Lozi', ['Keleke ya Ma-Adventist', 'a Lizazi la Bu 7'], ['ZM']),
-  staged(
-    'lue',
-    'Chiluvale',
-    'Luvale',
-    ['Chachi ya VaAdventist', 'ya Likumbi lya Chitanu na Chivali'],
-    ['ZM'],
-  ),
-  staged(
-    'kqn',
-    'Kikaonde',
-    'Kaonde',
-    ['Kipwilo kya BaAdventist', 'ba Juba ja Butanu na Bubiji'],
-    ['ZM'],
-  ),
-  staged('lun', 'Chilunda', 'Lunda', ['Chechi yawaAdventist', 'ya Ifuku daMuchiyedi'], ['ZM']),
-
-  // ── Mozambique Union Mission ─────────────────────────────────────────────
-  staged('seh', 'Sena', 'Sena', ['Mpingo wa Adventista', 'wa Ntsiku Yacinomwe'], ['MZ']),
-  staged(
-    'vmw',
-    'Emakhuwa',
-    'Makhuwa',
-    ['Ekerexa ya Adventista', 'ya Nihiku Natthanu na Nnli'],
-    ['MZ'],
-  ),
-  staged('ngl', 'Elomwe', 'Lomwe', ['Ekerexa ya Adventista', 'ya Nihiku Na Sabadu'], ['MZ', 'MW']),
-  staged(
-    'tso',
-    'Xichangana',
-    'Changana',
-    ['Kereke ya Vaadventista', 'va Siku ra Vunkombo'],
-    ['MZ'],
-  ),
-
-  // ── North-Eastern and South-Western Angola Union Missions ────────────────
-  staged('umb', 'Umbundu', 'Umbundu', ['Ongeleja Yavaadventista', 'Yeteke Liepandu'], ['AO']),
-  staged(
-    'kmb',
-    'Kimbundu',
-    'Kimbundu',
-    ['Ngeleja ya Adventista', 'ya Kizuwa kya Sambwadi'],
-    ['AO'],
-  ),
-  staged(
-    'kg',
-    'Kikongo',
-    'Kikongo',
-    ['Dibundu dya Adventista', 'dya Lumbu kya Nsambwadi'],
-    ['AO', 'ST'],
-  ),
-  staged('cjk', 'Chokwe', 'Chokwe', ['Chachi ya Adventista', 'ya Tangwa lya Sambwadi'], ['AO']),
-
-  // ── Botswana Union Conference ────────────────────────────────────────────
-  staged('kck', 'Ikalanga', 'Kalanga', ['Cece yeBaAdventista', 'yeZuba reCinomwe'], ['BW', 'ZW']),
-
-  // ── Indian Ocean Union Conference ────────────────────────────────────────
-  staged(
-    'mg',
-    'Malagasy',
-    'Malagasy',
-    ['Fiangonana Advantista', 'Mitandrina ny Andro Fahafito'],
-    ['MG'],
-    {
-      church: 'Fiangonana',
-    },
-  ),
-  staged('mfe', 'Kreol Morisien', 'Mauritian Creole', ['Legliz Adventis', 'Setiem Zour'], ['MU']),
-  staged('crs', 'Kreol Seselwa', 'Seychellois Creole', ['Legliz Adventis', 'Setyenm Zour'], ['SC']),
-  staged('rcf', 'Kréol Rénioné', 'Réunion Creole', ['Légliz Advantis', 'Sétyèm Zour'], ['RE']),
-  staged(
-    'zdj',
-    'Shikomori',
-    'Comorian',
-    ['Ngariya ya Waadventista', 'wa Mfumo wa Saba'],
-    ['KM', 'YT'],
-  ),
-  staged('sw', 'Kiswahili', 'Swahili', ['Kanisa la Waadventista', 'Wasabato'], ['KM', 'YT'], {
-    church: 'Kanisa',
-  }),
-
-  // ── Namibia (South Africa Union Conference territory) ────────────────────
-  staged('ng', 'Oshiwambo', 'Oshiwambo', ['Ongeleka yOvaadventist', 'vEfiku etiheyali'], ['NA']),
-  staged(
-    'hz',
-    'Otjiherero',
-    'Herero',
-    ['Ongeleka yOvaadventiste', 'vOeyuva oritjahambombari'],
-    ['NA'],
-  ),
+  staged('sn', 'chiShona', 'Shona', ['Sangano', 'remaSabata'], ['ZW']),
 ];
 
 export const LANGUAGES: readonly LanguageDef[] = [...ACTIVE, ...STAGED];
