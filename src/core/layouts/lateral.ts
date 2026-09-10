@@ -3,37 +3,37 @@
  * identifier beneath. This is the preferred, reading-aligned arrangement.
  */
 
-import { CONSTRUCTION, SYMBOL_UNITS } from '@/brand/constructionRules';
+import { GRID, grid, SYMBOL_UNITS } from '@/brand/constructionRules';
 import { padBox, symbolPaths, unionBoxes } from '../geometry';
 import type { Box, DrawablePath, LayoutFn } from '../types';
 import { buildIdentifierBlock } from './textBlock';
 
 export const lateral: LayoutFn = (spec, typeface) => {
+  const g = grid(typeface.xHeight);
   const symbolHeight = SYMBOL_UNITS;
   const symbol = symbolPaths(0, 0, symbolHeight);
 
-  const wordmarkSize = CONSTRUCTION.wordmarkSize * symbolHeight;
-  const lineStep = wordmarkSize * CONSTRUCTION.wordmarkLineHeight;
-  const wordmarkX = symbol.box.width + CONSTRUCTION.lateralGap * symbolHeight;
+  const wordmarkX = symbol.box.width + g.lateralGap;
 
   // The wordmark sits on the symbol's baseline: its last line's baseline is
-  // level with the bottom of the symbol.
+  // level with the bottom of the symbol. Measured at exactly 0 in all four
+  // published church logos.
   const lastBaseline = symbolHeight;
-  const lines = spec.wordmarkLines;
+  const lines = spec.primaryLines;
 
   const paths: DrawablePath[] = [...symbol.paths];
   const boxes: Box[] = [symbol.box];
   const wordmarkBaselines: number[] = [];
 
   lines.forEach((line, index) => {
-    const baseline = lastBaseline - (lines.length - 1 - index) * lineStep;
-    paths.push({ d: typeface.toPathData(line, wordmarkX, baseline, wordmarkSize) });
-    boxes.push(typeface.inkBounds(line, wordmarkX, baseline, wordmarkSize));
+    const baseline = lastBaseline - (lines.length - 1 - index) * g.primaryLineStep;
+    paths.push({ d: typeface.toPathData(line, wordmarkX, baseline, g.primarySize) });
+    boxes.push(typeface.inkBounds(line, wordmarkX, baseline, g.primarySize));
     wordmarkBaselines.push(baseline);
   });
 
   const wordmarkWidth = lines.reduce(
-    (max, line) => Math.max(max, typeface.measureWidth(line, wordmarkSize)),
+    (max, line) => Math.max(max, typeface.measureWidth(line, g.primarySize)),
     0,
   );
 
@@ -41,18 +41,17 @@ export const lateral: LayoutFn = (spec, typeface) => {
   // it runs past the wordmark's right edge and sets the lockup's width itself.
   const identifier = buildIdentifierBlock(spec, typeface, {
     originX: wordmarkX,
-    firstBaseline: lastBaseline + CONSTRUCTION.entityBaselineDrop * symbolHeight,
-    maxWidth: wordmarkWidth * CONSTRUCTION.secondaryRunOn,
+    firstBaseline: lastBaseline + g.secondaryDrop,
+    maxWidth: wordmarkWidth * GRID.secondaryRunOn,
     align: 'start',
   });
   paths.push(...identifier.paths);
   if (identifier.paths.length > 0) boxes.push(identifier.box);
 
   const contentBox = unionBoxes(boxes);
-  const clearSpace = CONSTRUCTION.clearSpaceXHeights * typeface.xHeight * wordmarkSize;
 
   return {
-    viewBox: spec.includeClearSpace ? padBox(contentBox, clearSpace) : contentBox,
+    viewBox: spec.includeClearSpace ? padBox(contentBox, g.clearSpace) : contentBox,
     contentBox,
     paths,
     notes: identifier.notes,
@@ -61,7 +60,7 @@ export const lateral: LayoutFn = (spec, typeface) => {
       wordmarkBaselines,
       identifierBaselines: identifier.baselines,
       wordmarkX,
-      clearSpace: padBox(contentBox, clearSpace),
+      clearSpace: padBox(contentBox, g.clearSpace),
     },
   };
 };

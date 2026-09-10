@@ -1,7 +1,15 @@
 import { MINIMUM_PRINT_WIDTH_MM, MINIMUM_SCREEN_WIDTH_PX } from '@/brand/constructionRules';
+import {
+  ACCEPTABILITY_LABEL,
+  ACCEPTABILITY_MARK,
+  approachesIn,
+  CATEGORIES,
+  DEPARTMENT_OPTIONS,
+  type ApproachId,
+  type DepartmentOptionId,
+} from '@/brand/entityIdentifiers';
 import { wordmarkText, type LanguageDef } from '@/brand/languages';
 import { PREVIEW_SURFACES } from '@/brand/palette';
-import { TIER_GROUPS, tiersInGroup, type TierId } from '@/brand/tiers';
 import { ColourPicker } from '@/components/ColourPicker';
 import {
   ChoiceGroup,
@@ -13,7 +21,7 @@ import {
 } from '@/components/controls';
 import { LockupPreview } from '@/components/LockupPreview';
 import { round } from '@/core/geometry';
-import { requireLayout, type LayoutId } from '@/core/layouts';
+import { LAYOUTS, type LayoutId } from '@/core/layouts';
 import type { Typeface } from '@/core/types';
 import { DownloadPanel } from './DownloadPanel';
 import { useCreatorState } from './useCreatorState';
@@ -30,7 +38,7 @@ interface Props {
 
 export function CreatorPage({ typeface, languages }: Props): React.JSX.Element {
   const state = useCreatorState(typeface, languages);
-  const tiers = tiersInGroup(state.group);
+  const approaches = approachesIn(state.category);
 
   const denomination = wordmarkText(state.language);
   const title = state.entityName.trim()
@@ -46,32 +54,44 @@ export function CreatorPage({ typeface, languages }: Props): React.JSX.Element {
           role="tablist"
           aria-label="Kind of entity"
         >
-          {TIER_GROUPS.map((group) => (
+          {CATEGORIES.map((category) => (
             <button
-              key={group.id}
+              key={category.id}
               type="button"
               role="tab"
               className="tab"
-              aria-selected={group.id === state.group}
+              aria-selected={category.id === state.category}
               onClick={() => {
-                state.setGroup(group.id);
+                state.setCategory(category.id);
               }}
             >
-              {group.label}
+              {category.label}
             </button>
           ))}
         </div>
 
-        {tiers.length > 1 ? (
-          <Fieldset legend="Entity type" hint={state.tier.help}>
-            <ChoiceGroup
-              label="Entity type"
-              value={state.tierId}
-              choices={tiers.map((t): Choice<TierId> => ({ id: t.id, label: t.label }))}
-              onChange={state.setTierId}
-            />
-          </Fieldset>
-        ) : null}
+        <p className="hint">{state.categoryHelp}</p>
+
+        <Fieldset
+          legend="Naming approach"
+          hint={
+            state.approachInert
+              ? 'Type an entity name below to use these. Without a name there is nothing to compose against the denomination, so every approach gives the same logo.'
+              : `${ACCEPTABILITY_LABEL[state.approach.acceptability]} — ${state.approach.help}`
+          }
+        >
+          <ChoiceGroup
+            label="Naming approach"
+            value={state.approachId}
+            choices={approaches.map(
+              (a): Choice<ApproachId> => ({
+                id: a.id,
+                label: `${ACCEPTABILITY_MARK[a.acceptability]}  ${a.label}`,
+              }),
+            )}
+            onChange={state.setApproachId}
+          />
+        </Fieldset>
 
         <Fieldset
           id="walkthrough-language"
@@ -90,42 +110,82 @@ export function CreatorPage({ typeface, languages }: Props): React.JSX.Element {
           />
         </Fieldset>
 
-        <Fieldset id="walkthrough-layout" legend="Layout" hint={state.layout.help}>
+        <Fieldset id="walkthrough-layout" legend="Version" hint={state.layout.help}>
           <ChoiceGroup
-            label="Layout"
+            label="Version"
             value={state.layoutId}
-            choices={state.tier.layouts.map((id): Choice<LayoutId> => ({
-              id,
-              label: requireLayout(id).label,
-              glyph: LAYOUT_GLYPHS[id],
-            }))}
+            choices={LAYOUTS.map(
+              (l): Choice<LayoutId> => ({
+                id: l.id,
+                label: l.label,
+                glyph: LAYOUT_GLYPHS[l.id],
+              }),
+            )}
             onChange={state.setLayoutId}
           />
         </Fieldset>
 
-        {state.layout.carriesEntityName ? (
+        <div id="walkthrough-entity-name">
+          <TextField
+            id="entity-name"
+            label="Entity name"
+            value={state.entityName}
+            placeholder="e.g. Rosettenville"
+            hint="Type the official name. Leave it blank for the denomination logo with no entity name."
+            onChange={state.setEntityName}
+          />
+        </div>
+
+        {state.category === 'administrative' ? (
           <>
-            <div id="walkthrough-entity-name">
+            <TextField
+              id="department-name"
+              label="Department name"
+              value={state.departmentName}
+              placeholder="e.g. Family Ministries"
+              hint="Optional. Names a department within the entity above."
+              onChange={state.setDepartmentName}
+            />
+            {state.departmentName.trim() ? (
+              <Fieldset
+                legend="Department naming"
+                hint={`${ACCEPTABILITY_LABEL[state.departmentOption.acceptability]} — ${state.departmentOption.help}`}
+              >
+                <ChoiceGroup
+                  label="Department naming"
+                  value={state.departmentOptionId}
+                  choices={DEPARTMENT_OPTIONS.map(
+                    (d): Choice<DepartmentOptionId> => ({
+                      id: d.id,
+                      label: `${ACCEPTABILITY_MARK[d.acceptability]}  ${d.label}`,
+                    }),
+                  )}
+                  onChange={state.setDepartmentOptionId}
+                />
+              </Fieldset>
+            ) : null}
+            {state.needsCustomAdministrativeForm ? (
               <TextField
-                id="entity-name"
-                label="Entity name"
-                value={state.entityName}
-                placeholder={state.tier.namePlaceholder}
-                hint="Type the official name. Leave it blank for the base logo with no entity name."
-                onChange={state.setEntityName}
-              />
-            </div>
-            {state.tier.allowsDescriptor ? (
-              <TextField
-                id="descriptor"
-                label="Department or descriptor"
-                value={state.descriptor}
-                placeholder={state.tier.descriptorPlaceholder ?? ''}
-                hint="Optional. Sets a smaller second line beneath the name."
-                onChange={state.setDescriptor}
+                id="administrative-form"
+                label={`Linking line in ${state.language.endonym}`}
+                value={state.customAdministrativeForm}
+                placeholder="e.g. da Igreja Adventista do Sétimo Dia"
+                hint="The English wording does not translate directly. Carry the principle instead: name the entity first, then say how it is part of the church — so the church reads as supported by its entities, not composed of them."
+                onChange={state.setCustomAdministrativeForm}
               />
             ) : null}
           </>
+        ) : null}
+
+        {state.approach.needsShortForm ? (
+          <TextField
+            id="entity-type"
+            label="Entity type"
+            value={state.entityType}
+            placeholder="e.g. Academy"
+            hint="Completes the name, as in “Lincoln Adventist Academy”."
+            onChange={state.setEntityType}
+          />
         ) : null}
 
         <Fieldset id="walkthrough-color" legend="Logo colour">
@@ -205,6 +265,13 @@ export function CreatorPage({ typeface, languages }: Props): React.JSX.Element {
             {MINIMUM_SCREEN_WIDTH_PX} px on screen.
           </span>
         </div>
+
+        {state.unavailableReason && !state.approachInert ? (
+          <p className="notice notice--warn">
+            <strong>This approach is not available in {state.language.endonym}.</strong>{' '}
+            {state.unavailableReason} The denomination logo is shown instead.
+          </p>
+        ) : null}
 
         {state.lockup.notes.map((note) => (
           <p key={note} className="notice">

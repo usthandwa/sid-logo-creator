@@ -9,12 +9,12 @@ const typeface = testTypeface();
 
 const spec: LockupSpec = {
   layout: 'lateral',
-  wordmarkLines: wordmarkLines(requireLanguage('en')),
-  entityName: 'Rosettenville',
+  primaryLines: wordmarkLines(requireLanguage('en')),
+  secondaryText: 'Rosettenville',
   descriptor: '',
   colour: '#255760',
   includeClearSpace: false,
-  uppercaseEntityName: true,
+  uppercaseSecondary: true,
   locale: 'en',
 };
 
@@ -81,12 +81,12 @@ describe('SVG export', () => {
     const lockup = buildLockup(
       {
         layout: 'lateral',
-        wordmarkLines: wordmarkLines(requireLanguage('en')),
-        entityName: 'Rosettenville',
+        primaryLines: wordmarkLines(requireLanguage('en')),
+        secondaryText: 'Rosettenville',
         descriptor: 'Communication',
         colour: '#000000',
         includeClearSpace: false,
-        uppercaseEntityName: true,
+        uppercaseSecondary: true,
         locale: 'en',
       },
       testTypeface(),

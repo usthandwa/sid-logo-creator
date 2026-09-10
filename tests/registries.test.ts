@@ -1,15 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import {
   ACTIVE_LANGUAGES,
+  wordmarkTextWithMark,
   LANGUAGES,
   STAGED_LANGUAGES,
   requireLanguage,
   wordmarkLines,
 } from '@/brand/languages';
 import { LOGO_COLOURS, getColour, DEFAULT_COLOUR_ID } from '@/brand/palette';
-import { TIERS, TIER_GROUPS, requireTier } from '@/brand/tiers';
+import {
+  APPROACHES,
+  CATEGORIES,
+  requireApproach,
+  requireCategory,
+} from '@/brand/entityIdentifiers';
 import { UNIONS, territoryName } from '@/brand/territories';
-import { LAYOUTS, requireLayout } from '@/core/layouts';
+import { requireLayout } from '@/core/layouts';
 import { buildFilename, slug } from '@/core/filename';
 
 describe('the language registry', () => {
@@ -56,28 +62,53 @@ describe('the language registry', () => {
   });
 });
 
-describe('the tier registry', () => {
-  it('places every tier in a group that exists', () => {
-    const groups = new Set(TIER_GROUPS.map((g) => g.id));
-    for (const tier of TIERS) expect(groups.has(tier.group), tier.id).toBe(true);
+describe('the entity identifier registry', () => {
+  it('places every approach in a category that exists', () => {
+    const categories = new Set(CATEGORIES.map((c) => c.id));
+    for (const a of APPROACHES) expect(categories.has(a.category), a.id).toBe(true);
   });
 
-  it('gives every tier at least one layout that exists', () => {
-    const layouts = new Set(LAYOUTS.map((l) => l.id));
-    for (const tier of TIERS) {
-      expect(tier.layouts.length, tier.id).toBeGreaterThan(0);
-      for (const id of tier.layouts) expect(layouts.has(id), `${tier.id}/${id}`).toBe(true);
+  it('offers at least one approach in every category', () => {
+    for (const c of CATEGORIES) {
+      expect(APPROACHES.some((a) => a.category === c.id), c.id).toBe(true);
     }
   });
 
-  it('gives every tier that allows a descriptor a placeholder for it', () => {
-    for (const tier of TIERS) {
-      if (tier.allowsDescriptor) expect(tier.descriptorPlaceholder, tier.id).toBeTruthy();
+  it('marks exactly one approach per category as preferred', () => {
+    // The guidelines rank the options; a category with two preferred options,
+    // or none, would leave the user without a default to reach for.
+    for (const c of CATEGORIES) {
+      const preferred = APPROACHES.filter(
+        (a) => a.category === c.id && a.acceptability === 'preferred',
+      );
+      expect(preferred.length, c.id).toBe(1);
     }
   });
 
-  it('falls back to a church for an unknown tier', () => {
-    expect(requireTier('nonsense').id).toBe('church');
+  it('lists the preferred approach first in its category', () => {
+    for (const c of CATEGORIES) {
+      const inCategory = APPROACHES.filter((a) => a.category === c.id);
+      expect(inCategory[0]?.acceptability, c.id).toBe('preferred');
+    }
+  });
+
+  it('gives every approach a rationale and an example shape', () => {
+    for (const a of APPROACHES) {
+      expect(a.help.length, a.id).toBeGreaterThan(20);
+      expect(a.shape.length, a.id).toBeGreaterThan(0);
+    }
+  });
+
+  it('falls back to the preferred approach for an unknown id', () => {
+    expect(requireApproach('nonsense').id).toBe('equal-size');
+  });
+
+  it('falls back to the default category for a retired id', () => {
+    // Category ids are persisted in the browser. "public" was renamed to
+    // "church"; anyone carrying the old value must still get a usable picker
+    // rather than a category with no approaches in it.
+    expect(requireCategory('public').id).toBe('church');
+    expect(requireCategory('nonsense').id).toBe('church');
   });
 });
 
@@ -130,5 +161,19 @@ describe('download filenames', () => {
   it('strips accents so the name survives email and Windows', () => {
     expect(slug('São Tomé e Príncipe')).toBe('sao-tome-e-principe');
     expect(slug('Tshivenḓa Ḽa')).not.toContain(' ');
+  });
+});
+
+describe('the registered mark', () => {
+  it('survives composition into a longer line', () => {
+    // The mark is required after "Adventist" in English. Composing the entity
+    // name with the denomination must not drop it.
+    const en = requireLanguage('en');
+    expect(wordmarkTextWithMark(en)).toContain('Adventist®');
+  });
+
+  it('is absent where the language does not declare one', () => {
+    const pt = requireLanguage('pt');
+    expect(wordmarkTextWithMark(pt)).not.toContain('®');
   });
 });

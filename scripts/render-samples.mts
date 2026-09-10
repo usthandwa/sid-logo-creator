@@ -116,12 +116,12 @@ for (const sample of SAMPLES) {
   const lockup = buildLockup(
     {
       layout: sample.layout,
-      wordmarkLines: wordmarkLines(language),
-      entityName: sample.entityName,
+      primaryLines: wordmarkLines(language),
+      secondaryText: sample.entityName,
       descriptor: sample.descriptor,
       colour: sample.colour,
       includeClearSpace: false,
-      uppercaseEntityName: true,
+      uppercaseSecondary: true,
       locale: language.code,
     },
     typeface,

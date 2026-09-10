@@ -3,8 +3,7 @@
  *
  * A layout is a pure function from a spec and a typeface to geometry. Adding
  * one means writing that function, importing it here and adding a descriptor
- * to `LAYOUTS`; the UI, the exporters and the tier registry pick it up with no
- * further changes.
+ * to `LAYOUTS`; the UI and the exporters pick it up with no further changes.
  */
 
 import type { LayoutFn } from '../types';
@@ -18,8 +17,6 @@ export interface LayoutDef {
   readonly label: string;
   readonly help: string;
   readonly build: LayoutFn;
-  /** True when the layout renders the entity name. */
-  readonly carriesEntityName: boolean;
 }
 
 export const LAYOUTS: readonly LayoutDef[] = [
@@ -28,14 +25,12 @@ export const LAYOUTS: readonly LayoutDef[] = [
     label: 'Horizontal',
     help: 'Symbol beside the name. The preferred, reading-aligned lockup.',
     build: lateral,
-    carriesEntityName: true,
   },
   {
     id: 'stacked',
     label: 'Vertical',
     help: 'Symbol above the name, centred. For narrow spaces.',
     build: stacked,
-    carriesEntityName: true,
   },
 ];
 

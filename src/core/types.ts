@@ -26,16 +26,30 @@ export interface Box {
 /** What the user asked for. */
 export interface LockupSpec {
   readonly layout: LayoutId;
-  /** Denomination name, already split into its lines and carrying any ®. */
-  readonly wordmarkLines: readonly string[];
-  /** The entity's own name. Empty means the base logo with no entity name. */
-  readonly entityName: string;
-  /** Optional smaller line under the entity name (department, descriptor). */
+  /**
+   * The primary block, already split into the lines it sets on and carrying any
+   * ®. Usually the denomination name; in an administrative lockup it is the
+   * entity's own name, with the denomination beneath.
+   */
+  readonly primaryLines: readonly string[];
+  /**
+   * The smaller line set beneath the primary block. What it holds depends on
+   * the naming approach — a church's name, or the denomination — so it is named
+   * for its position rather than its content. Empty means no second line.
+   */
+  readonly secondaryText: string;
+  /**
+   * Set the secondary line at primary size instead of the smaller secondary
+   * size. It stays a secondary line — beneath the anchored primary block — so
+   * the lockup grows downwards rather than lifting the primary off the symbol.
+   */
+  readonly secondaryAtPrimarySize?: boolean;
+  /** Optional third line, smaller again, beneath `secondaryText`. */
   readonly descriptor: string;
   /** Fill colour applied to every path. */
   readonly colour: string;
-  /** Set entity names in capitals, as the identity templates do. */
-  readonly uppercaseEntityName: boolean;
+  /** Set the secondary line in capitals, as the identity templates do. */
+  readonly uppercaseSecondary: boolean;
   /** Locale used for case conversion, so Turkish-style rules stay correct. */
   readonly locale: string;
   /**

@@ -157,12 +157,12 @@ function LanguageCard({ language, typeface, enabled, onToggle }: CardProps): Rea
       buildLockup(
         {
           layout: 'lateral',
-          wordmarkLines: wordmarkLines(language),
-          entityName: '',
+          primaryLines: wordmarkLines(language),
+          secondaryText: '',
           descriptor: '',
           colour: 'currentColor',
           includeClearSpace: false,
-          uppercaseEntityName: true,
+          uppercaseSecondary: true,
           locale: language.code,
         },
         typeface,

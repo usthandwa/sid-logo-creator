@@ -105,10 +105,15 @@ function widestLine(lines: readonly string[], typeface: Typeface, size: number):
 
 /**
  * Splits `text` into exactly `lineCount` lines, choosing the break points that
- * make the lines most even. Greedy wrapping leaves a long first line and a
- * stub second one, which reads badly under a symbol.
+ * make the lines most even.
+ *
+ * Greedy wrapping leaves a long first line and a stub second one, which reads
+ * badly under a symbol.
+ *
+ * Exported because a composed primary block — an entity name joined to the
+ * denomination name — has no authored line breaks and must find its own.
  */
-function balanceLines(
+export function balanceLines(
   text: string,
   typeface: Typeface,
   size: number,

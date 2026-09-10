@@ -63,6 +63,18 @@ export interface LanguageDef {
    * after "Adventist" in English. Omit where the mark is not used.
    */
   readonly registeredMarkAfter?: string;
+  /**
+   * The shortened form of the denomination — "Adventist" in English — used by
+   * the "only Adventist in the name" approach. Omit where no approved
+   * shortening exists; the approach is then offered but disabled.
+   */
+  readonly denominationShort?: string;
+  /**
+   * The administrative naming wording, preferred form first:
+   * ["of Seventh-day Adventists", "of the Seventh-day Adventist Church"].
+   * Omit where no approved wording exists.
+   */
+  readonly administrativeForms?: readonly [string, string];
   /** ISO 3166-1 alpha-2 codes of SID territories where the language is used. */
   readonly territories: readonly string[];
   readonly approval: LanguageApproval;
@@ -87,6 +99,8 @@ const ACTIVE: readonly LanguageDef[] = [
     direction: 'ltr',
     wordmark: ['Seventh-day', 'Adventist Church'],
     registeredMarkAfter: 'Adventist',
+    denominationShort: 'Adventist',
+    administrativeForms: ['of Seventh-day Adventists', 'of the Seventh-day Adventist Church'],
     territories: ['BW', 'LS', 'MW', 'MU', 'NA', 'SC', 'ZA', 'SZ', 'ZM', 'ZW', 'SH'],
     approval: {
       verified: true,
@@ -215,7 +229,24 @@ export function requireLanguage(code: string): LanguageDef {
  * without a space: "Sewendedag-" + "Adventistekerk".
  */
 export function wordmarkText(language: LanguageDef): string {
-  return language.wordmark.reduce(
+  return joinLines(language.wordmark);
+}
+
+/**
+ * The denomination name as a single string, carrying the ® where the language
+ * requires it.
+ *
+ * Use this wherever the denomination is composed into a longer line — the mark
+ * is required after "Adventist" in English, so dropping it when the entity name
+ * joins the denomination would produce artwork the guidelines forbid.
+ */
+export function wordmarkTextWithMark(language: LanguageDef): string {
+  return joinLines(wordmarkLines(language));
+}
+
+/** A line ending in a hyphen is a broken word, so it joins without a space. */
+function joinLines(lines: readonly string[]): string {
+  return lines.reduce(
     (text, line, index) =>
       index === 0 ? line : text.endsWith('-') ? text + line : `${text} ${line}`,
     '',

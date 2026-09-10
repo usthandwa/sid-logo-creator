@@ -5,12 +5,7 @@
  * Shared by every layout so the two constructions cannot drift apart.
  */
 
-import {
-  CONSTRUCTION,
-  SECONDARY_MIN_SCALE,
-  SYMBOL_UNITS,
-  secondaryTypeSize,
-} from '@/brand/constructionRules';
+import { GRID, grid } from '@/brand/constructionRules';
 import { applyCase, fitText, unionBoxes } from '../geometry';
 import type { Box, DrawablePath, LockupSpec, Typeface } from '../types';
 
@@ -49,11 +44,19 @@ export function buildIdentifierBlock(
   typeface: Typeface,
   options: IdentifierBlockOptions,
 ): IdentifierBlock {
-  const name = applyCase(spec.entityName.trim(), spec.uppercaseEntityName, spec.locale);
-  const descriptor = applyCase(spec.descriptor.trim(), spec.uppercaseEntityName, spec.locale);
+  const name = applyCase(spec.secondaryText.trim(), spec.uppercaseSecondary, spec.locale);
+  const descriptor = applyCase(spec.descriptor.trim(), spec.uppercaseSecondary, spec.locale);
   if (!name && !descriptor) return { ...EMPTY, lastBaseline: options.firstBaseline };
 
-  const nominal = secondaryTypeSize(typeface.xHeight, CONSTRUCTION.wordmarkSize * SYMBOL_UNITS);
+  const g = grid(typeface.xHeight);
+  const nominal = spec.secondaryAtPrimarySize ? g.primarySize : g.secondarySize;
+  /**
+   * Leading follows the type size rather than sitting at a fixed distance. The
+   * grid states the step against nominal secondary type; a line reduced toward
+   * the floor would otherwise keep the full step and end up with half again as
+   * much leading as the design calls for.
+   */
+  const leading = (size: number) => size * (GRID.secondaryLineStep / GRID.secondarySize);
   const paths: DrawablePath[] = [];
   const boxes: Box[] = [];
   const notes: string[] = [];
@@ -65,38 +68,37 @@ export function buildIdentifierBlock(
       maxWidth: options.maxWidth,
       nominalSize: nominal,
       maxLines: 2,
-      minScale: SECONDARY_MIN_SCALE,
+      minScale: g.secondaryMinScale,
       preferSingleLine: true,
     });
     if (fitted.size < nominal - 0.01) {
-      notes.push('The entity name was reduced to fit, within the permitted range.');
+      notes.push('The second line was reduced to fit, within the permitted range.');
     }
     if (fitted.lines.length > 1) {
-      notes.push('The entity name wraps onto two lines.');
+      notes.push('The second line wraps onto two lines.');
     }
     for (const [index, line] of fitted.lines.entries()) {
-      const lineBaseline = baseline + index * fitted.size * CONSTRUCTION.entityLineHeight;
+      const lineBaseline = baseline + index * leading(fitted.size);
       const x = alignX(line, typeface, fitted.size, options);
       paths.push({ d: typeface.toPathData(line, x, lineBaseline, fitted.size) });
       boxes.push(typeface.inkBounds(line, x, lineBaseline, fitted.size));
       baselines.push(lineBaseline);
     }
-    baseline += (fitted.lines.length - 1) * fitted.size * CONSTRUCTION.entityLineHeight;
+    baseline += (fitted.lines.length - 1) * leading(fitted.size);
 
     if (descriptor) {
-      const descriptorSize = fitted.size * CONSTRUCTION.descriptorSize;
+      const descriptorSize = fitted.size * GRID.descriptorSize;
       const fittedDescriptor = fitText(descriptor, typeface, {
         maxWidth: options.maxWidth,
         nominalSize: descriptorSize,
         maxLines: 2,
-        minScale: SECONDARY_MIN_SCALE,
+        minScale: g.secondaryMinScale,
         preferSingleLine: true,
       });
       for (const [index, line] of fittedDescriptor.lines.entries()) {
-        baseline +=
-          index === 0
-            ? fitted.size * CONSTRUCTION.entityLineHeight
-            : fittedDescriptor.size * CONSTRUCTION.entityLineHeight;
+        // The step down to the descriptor is set by the line above it; steps
+        // between its own lines are set by the descriptor's smaller size.
+        baseline += leading(index === 0 ? fitted.size : fittedDescriptor.size);
         const x = alignX(line, typeface, fittedDescriptor.size, options);
         paths.push({ d: typeface.toPathData(line, x, baseline, fittedDescriptor.size) });
         boxes.push(typeface.inkBounds(line, x, baseline, fittedDescriptor.size));
@@ -104,22 +106,23 @@ export function buildIdentifierBlock(
       }
     }
   } else if (descriptor) {
-    // A descriptor with no entity name is set at entity size, not reduced.
+    // A descriptor with no line above it is set at the full secondary size,
+    // not reduced.
     const fitted = fitText(descriptor, typeface, {
       maxWidth: options.maxWidth,
       nominalSize: nominal,
       maxLines: 2,
-      minScale: SECONDARY_MIN_SCALE,
+      minScale: g.secondaryMinScale,
       preferSingleLine: true,
     });
     for (const [index, line] of fitted.lines.entries()) {
-      const lineBaseline = baseline + index * fitted.size * CONSTRUCTION.entityLineHeight;
+      const lineBaseline = baseline + index * leading(fitted.size);
       const x = alignX(line, typeface, fitted.size, options);
       paths.push({ d: typeface.toPathData(line, x, lineBaseline, fitted.size) });
       boxes.push(typeface.inkBounds(line, x, lineBaseline, fitted.size));
       baselines.push(lineBaseline);
     }
-    baseline += (fitted.lines.length - 1) * fitted.size * CONSTRUCTION.entityLineHeight;
+    baseline += (fitted.lines.length - 1) * leading(fitted.size);
   }
 
   return { paths, box: unionBoxes(boxes), lastBaseline: baseline, baselines, notes };

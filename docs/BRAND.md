@@ -7,44 +7,115 @@ it does.
 
 ## The unit
 
-Everything is expressed against the height of the church symbol. In the code the symbol is
-`SYMBOL_UNITS` (1000) tall, and every other dimension is a fraction of that. Scaling a lockup is
-therefore one multiplication, and the ratios can be checked against printed artwork with a ruler.
+Everything is expressed in **x** — the x-height of the primary type — because that is the unit the
+identity system itself uses. adventist.design states the secondary-type rule that way ("75% the
+x-height of the primary type"), states clear space that way ("two times the height of the lowercase
+letters"), and its construction diagrams band the whole lockup in 1x, .75x and .5x steps.
+
+x depends on the loaded font's own metrics, so the lockup follows the typeface rather than assuming
+one. `grid(xHeight)` in `src/brand/constructionRules.ts` converts the ratios into drawing units. The
+symbol is `SYMBOL_UNITS` (1000) tall by definition, so fixing the symbol's height in x determines
+every other measurement, type size included.
 
 ## The measurements
 
-Official Seventh-day Adventist entity artwork, produced with the General Conference identity
-templates, was measured in both constructions. Expressed against symbol height:
+Taken from SID's own published church logos — `docs/reference/sid-church-logos/` — rendered at
+3000px wide and measured programmatically: x-height from the modal glyph top of each line, baselines
+from the modal glyph bottom, symbol from its ink bounds.
 
-|                           | Lateral            | Stacked          | Used       |
-| ------------------------- | ------------------ | ---------------- | ---------- |
-| Wordmark type size        | 0.5288             | 0.5291           | **0.529**  |
-| Wordmark line height (em) | 1.0045             | 1.0045           | **1.0045** |
-| Entity type size          | 0.2102             | 0.2115           | *derived*  |
-| Entity baseline drop      | 0.5032             | 0.5085           | **0.504**  |
-| Symbol-to-wordmark gap    | 0.264 (horizontal) | 0.290 (vertical) | both       |
+|                        | Zulu  | Afrikaans | Xhosa | Shona | Used      |
+| ---------------------- | ----- | --------- | ----- | ----- | --------- |
+| Symbol height          | 4.420 | 4.465     | 4.376 | 4.420 | **4.42x** |
+| Primary line step      | 2.000 | 2.020     | 1.980 | 2.000 | **2x**    |
+| Symbol-to-wordmark gap | 1.043 | 0.935     | 1.031 | 1.045 | **1x**    |
 
-The two constructions agree to within half a percent on every shared ratio. That agreement is what
-establishes these as the system rather than as one artboard's arrangement.
+Four independent logos agreeing is what establishes these as the system rather than one artboard's
+arrangement. The gap figures are the measured ink gap less each first glyph's left side bearing, so
+they describe the wordmark's origin rather than its first mark; they average 1.013x.
 
-### Entity type size is a rule, not a measurement
+The symbol's bottom sits exactly on the wordmark's last baseline in all four.
+
+### What this corrected
+
+An earlier version of this file recorded a wordmark type size of 0.529 of symbol height and a line
+height of 1.0045em, said to be measured from General Conference artwork. Both were wrong. Against the
+published logos the wordmark was **26% oversized** (0.529 where the artwork uses 0.4221) and the line
+step was 6% tight (1.874x where the artwork uses 2.000x). The error was invisible in symbol-height
+units and obvious the moment the same logo was rendered at the same symbol height and laid alongside
+the original.
+
+### Secondary type is a rule, not a measurement
 
 adventist.design states it directly: "The maximum size for secondary type is 75% the x-height of the
 primary type. If the secondary type is very long, it can be reduced to a minimum of 50% of the
-x-height."
+x-height." Both are used as stated, so the floor is two-thirds of nominal.
 
-Applying that to the wordmark gives `0.75 x 0.536 (x-height) x 0.529 (wordmark size) = 0.2127` of
-symbol height, against the 0.211 measured from artwork — agreement to 0.75%. The measured constant
-*was* the 75% rule all along, so the code now computes it from the loaded font's own x-height rather
-than hard-coding it. The floor is the same rule at 50%, which is two-thirds of nominal.
+### Still unverified
 
-Derived, not measured:
+SID's published church logos carry no secondary line and no stacked construction, so three ratios
+could not be measured and keep the proportion the tool has always used. They are marked `UNVERIFIED`
+in the code:
 
-- **Descriptor size** — 75% of the entity name. Note this is *not* the 75% rule above, which governs
-  secondary type against primary. The guidelines describe only two levels of type; a third line is an
-  extrapolation this tool makes, and the ratio is chosen to match rather than sourced.
-- **Clear space** — twice the height of the lowercase letters, as specified for entity
-  identifiers. Computed from the wordmark's x-height as reported by the font, not hard-coded.
+- **`secondaryDrop`** — primary's last baseline to the secondary's first.
+- **`secondaryLineStep`** — baseline-to-baseline within the secondary block. The construction diagram
+  suggests 1.25x (a .75x band plus a .5x gap), which is materially looser than the 0.9x in use.
+- **`stackedGap`** — symbol bottom to wordmark cap height in the stacked construction.
+
+**Descriptor size** — 75% of the entity name — is also unsourced. It is *not* the 75% rule above,
+which governs secondary against primary. The guidelines describe only two levels of type; a third
+line is an extrapolation this tool makes.
+
+**Clear space** is 2x by definition, computed from the font's x-height rather than hard-coded.
+
+## Entity identifiers
+
+The creator once offered an "entity type" — nine of them, in three tabs: church, conference, field,
+mission, union, division, institution, ministry, media. All nine drew identically. The only functional
+difference in the whole registry was that `church` disallowed a descriptor, so the picker asked the
+user a question that could not change the artwork.
+
+What does change the artwork is **how the name is composed against the denomination**, which is what
+adventist.design specifies. `src/brand/entityIdentifiers.ts` holds that instead:
+
+**Church** — public-facing entities: churches, schools, hospitals, ministries. Recommendations,
+aimed at public recognition.
+
+| | Approach | Result |
+| --- | --- | --- |
+| ✓ | Full denomination name, equal size | `Rosettenville Seventh-day Adventist® Church`, one block |
+| ! | Full denomination name, smaller | `Rosettenville` over a smaller `Seventh-day Adventist® Church` |
+| ! | Only "Adventist" in the name | `Lincoln Adventist Academy` |
+| ! | No part of the denomination name | `Cedar Lake Academy` |
+
+**Administrative** — requirements, not recommendations.
+
+| | Approach | Result |
+| --- | --- | --- |
+| ✓ | "of Seventh-day Adventists" | `Southern Africa-Indian Ocean Division` over `of Seventh-day Adventists` |
+| ! | "of the Seventh-day Adventist Church" | the same, less preferred wording |
+
+The ✓ / ! / ✕ marks are the guidelines' own acceptability key, and are shown on each choice. They are
+not style preferences — an unacceptable application breaks the system.
+
+Composing a name with the denomination means the primary block no longer has authored line breaks, so
+it finds its own with `balanceLines`. The plain denomination logo — no entity name — keeps the breaks
+authored per language, because those are published artwork.
+
+With no entity name typed, every approach produces the same denomination logo — there is nothing to
+compose against it. That is correct, but it reads as a dead control, so the picker says so instead of
+leaving the user to guess.
+
+**Administrative naming carries a principle, not a phrase.** The guidelines are explicit that "the
+previous examples may not translate directly across languages", and ask instead that the entity be
+named first and its place in the church second — so that the church reads as supported by its
+entities rather than composed of them, and as belonging to the people rather than the organisation.
+A language with no approved form is therefore prompted for its own linking line rather than refused;
+where an approved form exists it always wins over anything typed.
+
+One approach needs wording that must be approved per language: the shortened "Adventist" form and
+the administrative "of …" forms. Only English carries them so far. Where a language has not got the
+wording, the approach is offered but disabled with a note, rather than silently inventing a
+translation.
 
 ## Alignment
 
